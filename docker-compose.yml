@@ -11,13 +11,18 @@ services:
       - SECRET_KEY=${SECRET_KEY:-CHANGEME}
       - DEBUG=${DEBUG:-True}
       - DB_FILE=${DB_FILE:-db.sqlite3}
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; print(None if urllib.request.urlopen('http://localhost:8000/api/health').status == 200 else 0/0)" ]
-      timeout: 10s
-      interval: 5s
+      timeout: 15s
+      interval: 30s
       retries: 3
   db:
     container_name: db
@@ -26,13 +31,14 @@ services:
       - project_network
     environment:
       - POSTGRES_HOST=${POSTGRES_HOST:-localhost}
-      - POSTGRES_USER=${POSTGRES_USER:-default_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-default_password}
-      - POSTGRES_DB=${POSTGRES_DB:-default_db}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -h ${POSTGRES_HOST} -p 5432 -d ${POSTGRES_DB} -U ${POSTGRES_USER}" ]
-      timeout: 10s
-      interval: 5s
+      timeout: 20s
+      interval: 30s
       retries: 3
   frontend:
     container_name: frontend
